@@ -1,0 +1,1 @@
+Place the PDF's you need scanned in this DIR. Don't forget to remove this txt file.
