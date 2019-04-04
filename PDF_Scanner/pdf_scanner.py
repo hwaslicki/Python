@@ -3,48 +3,64 @@ import PyPDF2
 import os
 
 f = open("out.txt", "a")
+keywords = ""
+keywordsArray = []
 
-for fileName in os.listdir('./Documents'):
-    if "._" in fileName:
-        print("")
+print("\n\n\nBefore starting, make sure all the documents you\n" + 
+      "want to scan are in Documents directory.")
+
+def gatherWords():
+    print("\n\n Please enter the words you would like to search for.\n" +
+        "Seperate the words with a pipe character( | ).")
+
+    keywords = raw_input()
+
+    fields = keywords.split('|')
+
+    print("Are these words correct?\n\n")
+
+    for field in fields:
+        print(field)
+
+    print("\n\n")
+
+    wordsConfirm = raw_input("y or n\n")
+
+    if wordsConfirm == "y":
+        executeScan(fields)
     else:
-        cleanedName = fileName.replace("'", "")
-        object = open("./Documents/" + fileName, 'rb')
-        reader = PyPDF2.PdfFileReader(object)
-        pageNums = reader.numPages
+        keywords = ""
+        keywordsArray = []
+        gatherWords()
 
-        i = 0
+def executeScan(keys):
+    for fileName in os.listdir('./Documents'):
+        if fileName.lower().endswith(".pdf"):
+            print("Scaning " + fileName)
+            found = False
+            object = open("./Documents/" + fileName, 'rb')
+            reader = PyPDF2.PdfFileReader(object)
+            pageNums = reader.numPages
 
-        while i < pageNums:
-            page = reader.getPage(i)
-            text = page.extractText()
+            currentPage = 0
 
-            if 'breedingseason' in text or 'BreedingSeason' in text or 'breedingSeason' in text or 'Breedingseason' in text:
-                print("yes - " + cleanedName)
-                f.write(cleanedName + "\n")
-                    
-            elif 'breedingperiod' in text or 'BreedingPeriod' in text or 'Breedingperiod' in text or 'breedingPeriod' in text:
-                print("yes - " + cleanedName)
-                f.write(cleanedName + "\n")
-            elif 'matingseason' in text or 'MatingSeason' in text or 'matingSeason' in text or 'Matingseason' in text:
-                print("yes - " + cleanedName)
-                f.write(cleanedName + "\n")
+            while currentPage < pageNums:
+                page = reader.getPage(currentPage)
+                text = page.extractText()
+
+                for word in keys:
+                    if word in text:
+                        found = True
                 
-            elif 'matingperiod' in text or 'MatingPeriod' in text or 'matingPeriod' in text or 'Matingperiod' in text:
-                print("yes - " + cleanedName)
-                f.write(cleanedName + "\n")
+                currentPage = currentPage + 1
 
-            elif 'reproductiveseason' in text or 'ReproductiveSeason' in text or 'reproductiveSeason' in text or 'Reproductiveseason' in text:
-                print("yes - " + cleanedName)
-                f.write(cleanedName + "\n")
+            if found == True:
+                print("\nKeyword Found -- " + fileName)
+                f.write(fileName)
+        else:
+            print("Non-PDF file found, ignoring...")
+    
+    print("\n\nScan Complete\n\n")
 
-            elif 'reproductiveperiod' in text or 'ReproductivePeriod' in text or 'reproductivePeriod' in text or 'Reproductiveperiod' in text:
-                print("yes - " + cleanedName)
-                f.write(cleanedName + "\n")
 
-            else:
-                print('No - ' + cleanedName)
-            
-            i = i + 1
-
-print("Scan Complete")
+gatherWords()
